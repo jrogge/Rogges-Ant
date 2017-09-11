@@ -2,6 +2,7 @@
 from Tkinter import *
 from math import *
 from time import *
+from sys import * 
 # dimensions of window (always a square)
 windowDim = 800
 # number of pixels in a gridpoint
@@ -20,6 +21,7 @@ colorDict = { 0:"red", 1:"orange", 2:"yellow", 3:"green", 4:"blue", 5:"purple",
         6:"black"}
 # remove magic number from mod calculations in changing color (lines 149 - 170)
 numColors = len(colorDict)
+filename = argv[1]
 
 class Corner():
     def __init__(self):
@@ -184,7 +186,8 @@ def tamper():
     # coords to be flipped are stored on individual rows
     # - x and y are space delimited
     #mapPath = "./antMaps/map1.txt"
-    mapPath = "./antMaps/automapcopy.txt"
+    #mapPath = "./antMaps/automapcopy.txt"
+    mapPath = filename
     mapFile = open(mapPath, 'r')
     flipCoords = []
     for line in mapFile:

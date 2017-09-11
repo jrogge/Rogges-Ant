@@ -2,17 +2,18 @@
 from Tkinter import *
 from math import *
 from time import *
+from sys import *
 # dimensions of window (always a square)
 windowDim = 800
 # number of pixels in a gridpoint
 tileSize = 10
 buttonYOffset = 30
 
-
 # array of gridpoints that stores direction for each tile
 flowMap = []
 
-filename = "./antMaps/automapcopy.txt"
+filename = argv[1]
+#filename = "./antMaps/automapcopy.txt"
 
 # make and populate map basis
 gridArray = []
@@ -157,6 +158,7 @@ def load():
         screenX = tileSize * x
         screenY = tileSize * y
         canvas.create_rectangle(screenX, screenY, screenX + tileSize, screenY + tileSize, fill="blue")
+        drawDirectionMarker(x, y, "white")
     #flipCoords = [[middle, middle], [middle + 1, middle],
     #        [middle, middle + 1], [middle + 1, middle + 1],
     #        [middle - 1, middle], [middle, middle - 1],
@@ -164,7 +166,7 @@ def load():
     #        [middle - 1, middle + 1]]
     for i in xrange(len(flipCoords)):
         currentTile = flowMap[flipCoords[i][0]][flipCoords[i][1]]
-        gridArray[flipCoords[i][0]][flipCoords[i][1]]
+        gridArray[flipCoords[i][0]][flipCoords[i][1]] = 1
         currentTile.flip()
 
 
@@ -184,49 +186,13 @@ def save():
 
     f.close()
 
-def redrawDirectionMarker(event):
-    ''' Draw quarter circles pointing in flow direction for tiles that have
-    bee drawn over with blue'''
-    for rowIndex in xrange(len(gridArray)):
-        for columnIndex in xrange(len(gridArray[rowIndex])):
-            if (gridArray[rowIndex][columnIndex]):
-                lowerX = rowIndex * tileSize
-                upperX = lowerX + tileSize
-                lowerY = columnIndex * tileSize
-                upperY = lowerY + tileSize
-                centerX = (lowerX + upperX) / 2
-                centerY = (lowerY + upperY) / 2
-                endX = centerX
-                endY = centerY
-                # pointing in positive X (right)
-                if flowMap[rowIndex][columnIndex].xFlow == 1:
-                    startAngle = -45
-                    endX = upperX
-
-                #pointing in negative X (left)
-                elif flowMap[rowIndex][columnIndex].xFlow == -1:
-                    startAngle = 135
-                    endX = lowerX
-
-                #pointing in positive Y (down)
-                elif flowMap[rowIndex][columnIndex].yFlow == 1:
-                    startAngle = 225
-                    endY = upperY
-
-                #pointing in negative Y (up)
-                elif flowMap[rowIndex][columnIndex].yFlow == -1:
-                    startAngle = 45
-                    endY = lowerY
-
-                canvas.create_arc(lowerX, lowerY, upperX, upperY,
-                        start = startAngle, extent=90, style="arc", outline="white")
-                canvas.create_line(centerX, centerY, endX, endY, fill="white")
 
 setup()
 b = Button(root, text="save", command=save)
 b.pack(side=BOTTOM)
 canvas.focus_set()
 canvas.bind("<Button-1>", click)
+load()
 #canvas.bind("<Key>", redrawDirectionMarker)
 #canvas.bind("<B1-Motion>", drag)
 root.call('wm', 'attributes', '.', '-topmost', True)
