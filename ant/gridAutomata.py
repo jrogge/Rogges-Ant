@@ -184,7 +184,7 @@ def tamper():
     # coords to be flipped are stored on individual rows
     # - x and y are space delimited
     #mapPath = "./antMaps/map1.txt"
-    mapPath = "./antMaps/automap.txt"
+    mapPath = "./antMaps/automapcopy.txt"
     mapFile = open(mapPath, 'r')
     flipCoords = []
     for line in mapFile:
@@ -210,7 +210,7 @@ def tamper():
         flipTile(currentTile)
 
 def run():
-    numSteps = 5
+    numSteps = 50
     while(True):
         for i in xrange(numSteps):
             progressAnt()
@@ -218,11 +218,12 @@ def run():
 
 def click(event):
     run()
+    #progressAnt()
+    #canvas.update()
 
 setup()
 tamper()
 canvas.bind("<Button-1>", click)
-#drawDirectionMarkers()
+drawDirectionMarkers()
 root.call('wm', 'attributes', '.', '-topmost', True)
-#drawDirectionMarkers()
 root.mainloop()
