@@ -115,6 +115,8 @@ def click(event):
     # int division gets rid of decimal
     squareX = x / tileSize
     squareY = y / tileSize
+    middle = windowDim / tileSize / 2
+    print "(%d, %d)" % (squareX - middle, squareY - middle)
     flowMap[squareX][squareY].flip()
     if (gridArray[squareX][squareY]):
         gridArray[squareX][squareY] = 0
