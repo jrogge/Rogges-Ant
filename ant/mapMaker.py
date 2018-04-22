@@ -91,6 +91,8 @@ def drawDirectionMarker(rowIndex, columnIndex, arrowColor):
 
 def setup():
     ''' draw grid & populate flow array'''
+    middle = windowDim / 2
+    canvas.create_rectangle(middle, middle, middle + tileSize, middle + tileSize, fill="red")
     for i in xrange(windowDim/tileSize):
         # fill in grid
         canvas.create_line(0,tileSize * i, windowDim, tileSize * i)
@@ -105,10 +107,6 @@ def setup():
             # populate the colorMap (values represent corners clockwise from top right)
             drawDirectionMarker(i, j, "black")
 
-    middle = windowDim / 2
-    canvas.create_rectangle(middle, middle, middle + tileSize, middle + tileSize,
-            fill="red")
-
 def click(event):
     x = event.x
     y = event.y
@@ -116,7 +114,6 @@ def click(event):
     squareX = x / tileSize
     squareY = y / tileSize
     middle = windowDim / tileSize / 2
-    print "(%d, %d)" % (squareX - middle, squareY - middle)
     flowMap[squareX][squareY].flip()
     if (gridArray[squareX][squareY]):
         gridArray[squareX][squareY] = 0
@@ -160,17 +157,18 @@ def load():
         screenX = tileSize * x
         screenY = tileSize * y
         canvas.create_rectangle(screenX, screenY, screenX + tileSize, screenY + tileSize, fill="blue")
-        drawDirectionMarker(x, y, "white")
     #flipCoords = [[middle, middle], [middle + 1, middle],
     #        [middle, middle + 1], [middle + 1, middle + 1],
     #        [middle - 1, middle], [middle, middle - 1],
     #        [middle - 1, middle - 1], [middle + 1, middle - 1],
     #        [middle - 1, middle + 1]]
     for i in xrange(len(flipCoords)):
-        currentTile = flowMap[flipCoords[i][0]][flipCoords[i][1]]
-        gridArray[flipCoords[i][0]][flipCoords[i][1]] = 1
+        x = flipCoords[i][0]
+        y = flipCoords[i][1]
+        currentTile = flowMap[x][y]
+        gridArray[x][y] = 1
         currentTile.flip()
-
+        drawDirectionMarker(x, y, "white")
 
 def save():
     f = open(filename, 'w')

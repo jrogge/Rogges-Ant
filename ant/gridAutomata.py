@@ -16,6 +16,8 @@ flowMap = []
 # needed so tracing back over a corner is done in a different color
 # color progresses in the rainbow, is done mod 5 so loops back on itself
 colorMap = []
+# like color map but just used to tell which color to use
+bwTileMap = []
 # maps colors from the colorMap to actual colors
 colorDict = { 0:"red", 1:"orange", 2:"yellow", 3:"green", 4:"blue", 5:"purple",
         6:"black"}
@@ -79,11 +81,14 @@ def setup():
         flowMap.append([])
         # add a new row to the colorMap
         colorMap.append([])
+        # add a new row to the bwTileMap
+        bwTileMap.append([])
         for j in xrange(windowDim/tileSize):
             # populate the flowMap with FlowingTile instances
             flowMap[i].append(FlowingTile(i,j))
             # populate the colorMap (values represent corners clockwise from top right)
             colorMap[i].append([0, 0, 0, 0])
+            bwTileMap[i].append(0)
 
 def flipTile(tile):
     tile.xFlow *= -1
@@ -173,10 +178,22 @@ def progressAnt():
     # this method works because currentTile is a reference, not a copy
     flipTile(currentTile)
     
-    drawArc(currentPos)
+    #drawArc(currentPos)
+    screenX = previousTile.x * tileSize
+    screenY = previousTile.y * tileSize
+    if (bwTileMap[previousTile.x][previousTile.y]):
+        canvas.create_rectangle(screenX, screenY, screenX + tileSize, screenY + tileSize, fill="white")
+    else:
+        canvas.create_rectangle(screenX, screenY, screenX + tileSize, screenY + tileSize, fill="black")
+
+    bwTileMap[ant.x][ant.y] = 1 - bwTileMap[ant.x][ant.y]
 
     previousTile.x = currentPos.x
     previousTile.y = currentPos.y
+
+    screenX = ant.x * tileSize
+    screenY = ant.y * tileSize
+    canvas.create_rectangle(screenX, screenY, screenX + tileSize, screenY + tileSize, fill="red")
 
 def tamper():
     gridSize = windowDim / tileSize
@@ -202,7 +219,7 @@ def tamper():
         flipCoords[lastIndex][1] = y
         screenX = tileSize * x
         screenY = tileSize * y
-        canvas.create_rectangle(screenX, screenY, screenX + tileSize, screenY + tileSize, fill="blue")
+        canvas.create_rectangle(screenX, screenY, screenX + tileSize, screenY + tileSize, fill="black")
     #flipCoords = [[middle, middle], [middle + 1, middle],
     #        [middle, middle + 1], [middle + 1, middle + 1],
     #        [middle - 1, middle], [middle, middle - 1],
@@ -212,21 +229,22 @@ def tamper():
         currentTile = flowMap[flipCoords[i][0]][flipCoords[i][1]]
         flipTile(currentTile)
 
-def run():
-    numSteps = 50
+def run(numSteps):
     while(True):
         for i in xrange(numSteps):
             progressAnt()
         canvas.update()
 
 def click(event):
-    run()
-    #progressAnt()
+    steps = 5
+    run(steps)
+    #for i in xrange(steps):
+    #    progressAnt()
     #canvas.update()
 
 setup()
 tamper()
 canvas.bind("<Button-1>", click)
-drawDirectionMarkers()
+#drawDirectionMarkers()
 root.call('wm', 'attributes', '.', '-topmost', True)
 root.mainloop()
