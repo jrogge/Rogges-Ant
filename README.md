@@ -5,9 +5,10 @@ mapMaker.py takes a filename as a command-line argument which is where it will s
 ```
 python mapMaker.py ./antMaps/ulam.txt
 ```
-click anywhere on the canvas to play/pause the simulation
+click squares to flip their direction
+
 gridAutomata.py also takes a filename as a command-line argument, which is where it reads a map from. Try
 ```
 python gridAutomata.py ./antMaps/ulam.txt
 ```
-click squares to flip their direction
+click anywhere on the canvas to play/pause the simulation
