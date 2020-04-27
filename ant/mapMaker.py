@@ -6,7 +6,7 @@ from sys import *
 # dimensions of window (always a square)
 windowDim = 800
 # number of pixels in a gridpoint
-tileSize = 10
+tileSize = 20
 buttonYOffset = 30
 
 # array of gridpoints that stores direction for each tile
@@ -100,11 +100,11 @@ def setup():
 
         # add a new row to the flowMap
         flowMap.append([])
-        # add a new row to the colorMap
+        gridSize = windowDim / tileSize
+        middle = gridSize / 2.0
         for j in xrange(windowDim/tileSize):
             # populate the flowMap with FlowingTile instances
-            flowMap[i].append(FlowingTile(i,j))
-            # populate the colorMap (values represent corners clockwise from top right)
+            flowMap[i].append(FlowingTile(i - middle,j - middle))
             drawDirectionMarker(i, j, "black")
 
 def click(event):

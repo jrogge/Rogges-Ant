@@ -83,12 +83,14 @@ def setup():
         colorMap.append([])
         # add a new row to the bwTileMap
         bwTileMap.append([])
+        gridSize = windowDim / tileSize
+        middle = gridSize / 2.0
         for j in xrange(windowDim/tileSize):
             # populate the flowMap with FlowingTile instances
-            flowMap[i].append(FlowingTile(i,j))
+            flowMap[i].append(FlowingTile(i - middle,j - middle))
             # populate the colorMap (values represent corners clockwise from top right)
             colorMap[i].append([0, 0, 0, 0])
-            bwTileMap[i].append(0)
+            bwTileMap[i].append(1)
 
 def flipTile(tile):
     tile.xFlow *= -1
@@ -171,12 +173,6 @@ def progressAnt():
         draw the path the ant takes '''
     currentTile = flowMap[ant.x][ant.y]
     currentPos = Point(ant.x, ant.y)
-    # change x and y based on the flow of the current tile
-    ant.x += currentTile.xFlow
-    ant.y += currentTile.yFlow
-    # reverse direction of tile after moving from it
-    # this method works because currentTile is a reference, not a copy
-    flipTile(currentTile)
     
     #drawArc(currentPos)
     screenX = previousTile.x * tileSize
@@ -190,6 +186,14 @@ def progressAnt():
 
     previousTile.x = currentPos.x
     previousTile.y = currentPos.y
+
+    # change x and y based on the flow of the current tile
+    ant.x += currentTile.xFlow
+    ant.y += currentTile.yFlow
+
+    # reverse direction of tile after moving from it
+    # this method works because currentTile is a reference, not a copy
+    flipTile(currentTile)
 
     screenX = ant.x * tileSize
     screenY = ant.y * tileSize
@@ -219,6 +223,7 @@ def tamper():
         flipCoords[lastIndex][1] = y
         screenX = tileSize * x
         screenY = tileSize * y
+        bwTileMap[x][y] = 0
         canvas.create_rectangle(screenX, screenY, screenX + tileSize, screenY + tileSize, fill="black")
     #flipCoords = [[middle, middle], [middle + 1, middle],
     #        [middle, middle + 1], [middle + 1, middle + 1],
@@ -229,22 +234,30 @@ def tamper():
         currentTile = flowMap[flipCoords[i][0]][flipCoords[i][1]]
         flipTile(currentTile)
 
+def key(event):
+    print(event.char)
+    progressAnt()
+    canvas.update()
+
 def run(numSteps):
+    #for i in xrange(numSteps):
+    #    progressAnt()
+    #canvas.update()
     while(True):
         for i in xrange(numSteps):
             progressAnt()
+            #sleep(0.01)
         canvas.update()
 
 def click(event):
-    steps = 5
+    #steps = 500
+    steps = 1
     run(steps)
-    #for i in xrange(steps):
-    #    progressAnt()
-    #canvas.update()
 
 setup()
 tamper()
 canvas.bind("<Button-1>", click)
-#drawDirectionMarkers()
+#window.bind("<Enter>", key)
+drawDirectionMarkers()
 root.call('wm', 'attributes', '.', '-topmost', True)
 root.mainloop()
