@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#/usr/bin/python
 from Tkinter import *
 from math import *
 from time import *
@@ -6,7 +6,7 @@ from sys import *
 # dimensions of window (always a square)
 windowDim = 800
 # number of pixels in a gridpoint
-tileSize = 10
+tileSize = 20
 # starting coords of the ant
 startX = windowDim / (tileSize * 2)
 startY = windowDim / (tileSize * 2)
@@ -40,7 +40,7 @@ class Point:
         self.y = y
 
 ant = Point(startX, startY)
-previousTile = Point(startX, startY)
+previousPos = Point(startX, startY)
 
 class FlowingTile:
     def __init__(self, x, y):
@@ -70,8 +70,27 @@ window.pack()
 canvas = Canvas(window, height=windowDim, width=windowDim)
 canvas.pack()
 
+def draw_metagrid():
+    gridSize = windowDim / tileSize
+    middle = gridSize / 2.0
+    for i in xrange(windowDim/tileSize):
+        # fill in grid
+        l_width = 2
+        if ((i - middle) % 2 == 0):
+            l_width = 1
+        canvas.create_line(0,tileSize * i, windowDim, tileSize * i,
+                width=l_width, fill="blue")
+        l_width = 1
+        if ((i - middle) % 2 == 0):
+            l_width = 2
+        canvas.create_line(tileSize * i, 0, tileSize * i, windowDim,
+                width=l_width, fill="blue")
+
+
 def setup():
     ''' draw grid and populate the flow array '''
+    gridSize = windowDim / tileSize
+    middle = gridSize / 2.0
     for i in xrange(windowDim/tileSize):
         # fill in grid
         canvas.create_line(0,tileSize * i, windowDim, tileSize * i)
@@ -83,8 +102,6 @@ def setup():
         colorMap.append([])
         # add a new row to the bwTileMap
         bwTileMap.append([])
-        gridSize = windowDim / tileSize
-        middle = gridSize / 2.0
         for j in xrange(windowDim/tileSize):
             # populate the flowMap with FlowingTile instances
             flowMap[i].append(FlowingTile(i - middle,j - middle))
@@ -92,43 +109,57 @@ def setup():
             colorMap[i].append([0, 0, 0, 0])
             bwTileMap[i].append(1)
 
+    screenX = ant.x * tileSize
+    screenY = ant.y * tileSize
+    canvas.create_rectangle(screenX, screenY, screenX + tileSize,
+            screenY + tileSize, fill="red")
+
 def flipTile(tile):
     tile.xFlow *= -1
     tile.yFlow *= -1
+
+def drawMarker(rowIndex, columnIndex):
+    epsilon = 2
+
+    outlineColor = "white"
+    if bwTileMap[rowIndex][columnIndex]:
+        outlineColor = "black"
+
+    # pointing in positive X (right)
+    if flowMap[rowIndex][columnIndex].xFlow == 1:
+        startAngle = -45
+
+    #pointing in negative X (left)
+    elif flowMap[rowIndex][columnIndex].xFlow == -1:
+        startAngle = 135
+
+    #pointing in positive Y (down)
+    elif flowMap[rowIndex][columnIndex].yFlow == 1:
+        startAngle = 225
+
+    #pointing in negative Y (up)
+    elif flowMap[rowIndex][columnIndex].yFlow == -1:
+        startAngle = 45
+
+    lowerX = rowIndex * tileSize + epsilon
+    upperX = lowerX + tileSize - 2 * epsilon
+    lowerY = columnIndex * tileSize + epsilon
+    upperY = lowerY + tileSize - 2 * epsilon
+    canvas.create_arc(lowerX, lowerY, upperX, upperY,
+            start = startAngle, extent=90, style="arc", outline=outlineColor)
 
 def drawDirectionMarkers():
     ''' Draw quarter circles pointing in flow direction '''
     for rowIndex in xrange(windowDim/tileSize):
         for columnIndex in xrange(windowDim/tileSize):
-            # pointing in positive X (right)
-            if flowMap[rowIndex][columnIndex].xFlow == 1:
-                startAngle = -45
-
-            #pointing in negative X (left)
-            elif flowMap[rowIndex][columnIndex].xFlow == -1:
-                startAngle = 135
-
-            #pointing in positive Y (down)
-            elif flowMap[rowIndex][columnIndex].yFlow == 1:
-                startAngle = 225
-
-            #pointing in negative Y (up)
-            elif flowMap[rowIndex][columnIndex].yFlow == -1:
-                startAngle = 45
-
-            lowerX = rowIndex * tileSize
-            upperX = lowerX + tileSize
-            lowerY = columnIndex * tileSize
-            upperY = lowerY + tileSize
-            canvas.create_arc(lowerX, lowerY, upperX, upperY,
-                    start = startAngle, extent=90, style="arc")
+            drawMarker(rowIndex, columnIndex)
 
 def drawArc(currentPos):
-     # draw ant's path
+    # draw ant's path
 
     # center represents the center of rotation of the quarter circle the ant goes through
-    centerX = (previousTile.x + ant.x + 1) / 2
-    centerY = (previousTile.y + ant.y + 1) / 2
+    centerX = (previousPos.x + ant.x + 1) / 2
+    centerY = (previousPos.y + ant.y + 1) / 2
     center = Point(centerX, centerY)
     
     # bbox is the Tkinter way of saying the box enclosing the ellipse
@@ -174,18 +205,8 @@ def progressAnt():
     currentTile = flowMap[ant.x][ant.y]
     currentPos = Point(ant.x, ant.y)
     
-    #drawArc(currentPos)
-    screenX = previousTile.x * tileSize
-    screenY = previousTile.y * tileSize
-    if (bwTileMap[previousTile.x][previousTile.y]):
-        canvas.create_rectangle(screenX, screenY, screenX + tileSize, screenY + tileSize, fill="white")
-    else:
-        canvas.create_rectangle(screenX, screenY, screenX + tileSize, screenY + tileSize, fill="black")
-
-    bwTileMap[ant.x][ant.y] = 1 - bwTileMap[ant.x][ant.y]
-
-    previousTile.x = currentPos.x
-    previousTile.y = currentPos.y
+    previousPos.x = currentPos.x
+    previousPos.y = currentPos.y
 
     # change x and y based on the flow of the current tile
     ant.x += currentTile.xFlow
@@ -194,6 +215,17 @@ def progressAnt():
     # reverse direction of tile after moving from it
     # this method works because currentTile is a reference, not a copy
     flipTile(currentTile)
+
+    screenX = previousPos.x * tileSize
+    screenY = previousPos.y * tileSize
+    if (bwTileMap[previousPos.x][previousPos.y]):
+        canvas.create_rectangle(screenX, screenY, screenX + tileSize, screenY + tileSize, fill="white")
+    else:
+        canvas.create_rectangle(screenX, screenY, screenX + tileSize, screenY + tileSize, fill="black")
+
+    drawMarker(previousPos.x, previousPos.y)
+
+    bwTileMap[ant.x][ant.y] = 1 - bwTileMap[ant.x][ant.y]
 
     screenX = ant.x * tileSize
     screenY = ant.y * tileSize
@@ -242,10 +274,14 @@ def key(event):
 def run(numSteps):
     #for i in xrange(numSteps):
     #    progressAnt()
+    #draw_metagrid()
+    #drawDirectionMarkers()
     #canvas.update()
     while(True):
         for i in xrange(numSteps):
             progressAnt()
+            draw_metagrid()
+            #drawDirectionMarkers()
             #sleep(0.01)
         canvas.update()
 
@@ -255,9 +291,11 @@ def click(event):
     run(steps)
 
 setup()
+draw_metagrid()
 tamper()
 canvas.bind("<Button-1>", click)
 #window.bind("<Enter>", key)
 drawDirectionMarkers()
-root.call('wm', 'attributes', '.', '-topmost', True)
+#root.call('wm', 'attributes', '.', '-topmost', True)
+root.call('wm', 'attributes', '.')
 root.mainloop()
