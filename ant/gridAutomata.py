@@ -1,15 +1,15 @@
 #/usr/bin/python
-from Tkinter import *
+from tkinter import *
 from math import *
 from time import *
 from sys import * 
 # dimensions of window (always a square)
-windowDim = 800
+windowDim = 1600
 # number of pixels in a gridpoint
 tileSize = 20
 # starting coords of the ant
-startX = windowDim / (tileSize * 2)
-startY = windowDim / (tileSize * 2)
+startX = windowDim // (tileSize * 2)
+startY = windowDim // (tileSize * 2)
 # array of gridpoints that stores direction for each tile
 flowMap = []
 # array of gridpoints that determines the color of arc to draw
@@ -71,9 +71,9 @@ canvas = Canvas(window, height=windowDim, width=windowDim)
 canvas.pack()
 
 def draw_metagrid():
-    gridSize = windowDim / tileSize
-    middle = gridSize / 2.0
-    for i in xrange(windowDim/tileSize):
+    gridSize = windowDim // tileSize
+    middle = gridSize / 2
+    for i in range(gridSize):
         # fill in grid
         l_width = 2
         if ((i - middle) % 2 == 0):
@@ -89,9 +89,9 @@ def draw_metagrid():
 
 def setup():
     ''' draw grid and populate the flow array '''
-    gridSize = windowDim / tileSize
-    middle = gridSize / 2.0
-    for i in xrange(windowDim/tileSize):
+    gridSize = windowDim // tileSize
+    middle = gridSize / 2
+    for i in range(gridSize):
         # fill in grid
         canvas.create_line(0,tileSize * i, windowDim, tileSize * i)
         canvas.create_line(tileSize * i, 0, tileSize * i, windowDim)
@@ -102,7 +102,7 @@ def setup():
         colorMap.append([])
         # add a new row to the bwTileMap
         bwTileMap.append([])
-        for j in xrange(windowDim/tileSize):
+        for j in range(gridSize):
             # populate the flowMap with FlowingTile instances
             flowMap[i].append(FlowingTile(i - middle,j - middle))
             # populate the colorMap (values represent corners clockwise from top right)
@@ -150,8 +150,8 @@ def drawMarker(rowIndex, columnIndex):
 
 def drawDirectionMarkers():
     ''' Draw quarter circles pointing in flow direction '''
-    for rowIndex in xrange(windowDim/tileSize):
-        for columnIndex in xrange(windowDim/tileSize):
+    for rowIndex in range(windowDim//tileSize):
+        for columnIndex in range(windowDim//tileSize):
             drawMarker(rowIndex, columnIndex)
 
 def drawArc(currentPos):
@@ -230,10 +230,12 @@ def progressAnt():
     screenX = ant.x * tileSize
     screenY = ant.y * tileSize
     canvas.create_rectangle(screenX, screenY, screenX + tileSize, screenY + tileSize, fill="red")
+    #TODO: fix drawing arc
+    #drawArc(currentPos)
 
 def tamper():
-    gridSize = windowDim / tileSize
-    middle = gridSize / 2
+    gridSize = windowDim // tileSize
+    middle = gridSize // 2
 
     # parse map file
     # coords to be flipped are stored on individual rows
@@ -262,7 +264,7 @@ def tamper():
     #        [middle - 1, middle], [middle, middle - 1],
     #        [middle - 1, middle - 1], [middle + 1, middle - 1],
     #        [middle - 1, middle + 1]]
-    for i in xrange(len(flipCoords)):
+    for i in range(len(flipCoords)):
         currentTile = flowMap[flipCoords[i][0]][flipCoords[i][1]]
         flipTile(currentTile)
 
@@ -271,24 +273,27 @@ def key(event):
     progressAnt()
     canvas.update()
 
-def run(numSteps):
-    #for i in xrange(numSteps):
-    #    progressAnt()
-    #draw_metagrid()
-    #drawDirectionMarkers()
-    #canvas.update()
-    while(True):
-        for i in xrange(numSteps):
+def run(numSteps, step):
+    if step:
+        for i in range(numSteps):
             progressAnt()
-            draw_metagrid()
-            #drawDirectionMarkers()
-            #sleep(0.01)
+        #draw_metagrid()
+        drawDirectionMarkers()
         canvas.update()
+    else:
+        while(True):
+            for i in range(numSteps):
+                progressAnt()
+                #draw_metagrid()
+                #drawDirectionMarkers()
+                #sleep(0.01)
+            #drawArc(ant)
+            canvas.update()
 
 def click(event):
-    #steps = 500
-    steps = 1
-    run(steps)
+    step = False
+    numSteps = 1
+    run(numSteps, step)
 
 setup()
 draw_metagrid()
